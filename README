@@ -1,0 +1,53 @@
+0.1版本实现程序的TCP收发
+0.2 ~
+0.3 ~
+0.4 增加两个线程，input thread 和 output thread
+	多线程编程需要修改Makefile文件./Air_Env_Server/Makefile 以及./Air_Env_Server/src/Makefile
+		1、/Air_Env_Server/Makefile文件中添加 DEPENDS:=+libpthread，依赖动态库文件
+		define Package/air_env_server
+			SECTION:=utils
+			CATEGORY:=Utilities
+			TITLE:=air_env_server -- prints a snarky message
+			++++++++++++++++++++++++++++
+			+DEPENDS:=+libpthread
+			++++++++++++++++++++++++++++
+		endef
+		添加动态库路径，为安装程序使用，安装包依赖文件
+		define Package/air_env_server/install
+			$(INSTALL_DIR) $(1)/bin
+			++++++++++++++++++++++++++++
+			+$(CP) /home/zjgeer/doc/OpenWrt-SDK-ramips-for-linux-i686-gcc-4.8-linaro_uClibc-0.9.33.2/package/Air_Env_Server/src/libpthread.so.0 $(1)/bin/  
+			++++++++++++++++++++++++++++
+			$(INSTALL_BIN) $(PKG_BUILD_DIR)/air_env_server $(1)/bin/
+		endef
+
+		2、./Air_Env_Server/src/Makefile添加 -lpthread
+		$(CC) $(LDFLAGS) air_env_server.o input_uart.o -o air_env_server -lpthread
+	增加USB串口接收程序，ttyUSB0作为PM2.5传感器端口，ttyUSB1作为GPS传输端口
+0.5 增加文件output_tcp.c output_tcp.h
+	添加TCP服务器程序
+0.6 版本，TCP服务器线程中新建多客户端线程，可以实现多客户端连接，但当其中任何一个退出连接，应用程序air_env_server退出程序
+	
+0.7 版本，未做修改，历史版本备份
+
+0.8 在input_uart线程分别创建了三个子线程，分别处理接收三个USB串口的相关数据
+
+0.9 在input_uart线程中，依次打开ttyUSB0，ttyUSB1，ttyUSB2串口设备，读取串口设备的第一个字节，判断该串口设备为哪个设备，为该
+	串口创建一个线程，处理串口接收函数
+
+1.0 添加client接收处理部分，在input_uart.h中创建了四个结构体
+
+1.1 实现PM2.5 PM10数据采集及处理，GPS数据经度，纬度，高度数据的采集，响应客户端命令请求"GET_DATA"->获取传感器等相关数据
+	命令请求"SEND_CMD"->发送相关命令，操作气体采集装置
+
+1.2 响应客户端命令请求"GET_PICTURE"->实现抓拍功能，添加input_uvc.c input_uvc.h,新建新线程thread_input_uvc
+
+
+
+
+
+
+
+
+
+
